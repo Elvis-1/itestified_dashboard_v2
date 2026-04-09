@@ -4,10 +4,11 @@ import { buildScriptureOfTheDayHref } from "@/features/admin/presentation/state/
 
 export function ScriptureScheduleBuilder({ viewModel }: { viewModel: ScriptureOfTheDayViewModel }) {
   return (
-    <div className="max-w-[980px] space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-[18px] font-semibold text-white">Schedule Scriptures</h2>
-        <button type="button" className="rounded-[8px] bg-white/40 px-6 py-2 text-[14px] text-white/80">
+    <form action="/scripture-of-the-day" className="max-w-[980px] space-y-4">
+      <input type="hidden" name="tab" value="scheduled" />
+      <input type="hidden" name="saved" value="1" />
+      <div className="flex items-center justify-end">
+        <button type="submit" className="rounded-[8px] bg-white/40 px-6 py-2 text-[14px] text-white/80">
           Save
         </button>
       </div>
@@ -64,7 +65,10 @@ export function ScriptureScheduleBuilder({ viewModel }: { viewModel: ScriptureOf
         </div>
 
         <div className="mt-7">
-          <Link href={buildScriptureOfTheDayHref({ edit: "new", count: viewModel.scheduleEntryCount + 1 })} className="inline-flex h-[30px] items-center justify-center rounded-[8px] border border-[#9B68D5] px-4 text-[14px] text-[#c996ff]">
+          <Link
+            href={buildScriptureOfTheDayHref({ edit: "new", count: viewModel.scheduleEntryCount + 1 })}
+            className="inline-flex h-[30px] items-center justify-center rounded-[8px] border border-[#9B68D5] px-4 text-[14px] text-[#c996ff]"
+          >
             + Add New
           </Link>
         </div>
@@ -76,27 +80,27 @@ export function ScriptureScheduleBuilder({ viewModel }: { viewModel: ScriptureOf
           <label className="space-y-2">
             <span className="text-[13px] font-medium text-white/90">From</span>
             <div className="relative">
-              <input placeholder="MM/DD/YYYY" className="h-[44px] w-full rounded-[8px] bg-[#242424] px-4 pr-10 text-[13px] text-white/50 outline-none placeholder:text-white/30" />
+              <input name="from" placeholder="MM/DD/YYYY" className="h-[44px] w-full rounded-[8px] bg-[#242424] px-4 pr-10 text-[13px] text-white/50 outline-none placeholder:text-white/30" />
               <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-white/55">🗓</span>
             </div>
           </label>
           <label className="space-y-2">
             <span className="text-[13px] font-medium text-white/90">To</span>
             <div className="relative">
-              <input placeholder="MM/DD/YYYY" className="h-[44px] w-full rounded-[8px] bg-[#242424] px-4 pr-10 text-[13px] text-white/50 outline-none placeholder:text-white/30" />
+              <input name="to" placeholder="MM/DD/YYYY" className="h-[44px] w-full rounded-[8px] bg-[#242424] px-4 pr-10 text-[13px] text-white/50 outline-none placeholder:text-white/30" />
               <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-white/55">🗓</span>
             </div>
           </label>
           <label className="space-y-2">
             <span className="text-[13px] font-medium text-white/90">Time</span>
             <div className="relative">
-              <input defaultValue="00:00" className="h-[44px] w-full rounded-[8px] bg-[#242424] px-4 pr-10 text-[13px] text-white/50 outline-none" />
+              <input name="time" defaultValue="00:00" className="h-[44px] w-full rounded-[8px] bg-[#242424] px-4 pr-10 text-[13px] text-white/50 outline-none" />
               <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-white/55">◔</span>
             </div>
             <p className="text-[11px] text-white/35">Scriptures will be posted Daily at this time</p>
           </label>
         </div>
       </div>
-    </div>
+    </form>
   );
 }

@@ -1,6 +1,6 @@
 import type { AuthUser } from "@/core/auth/types";
 
-const users: AuthUser[] = [
+const seedUsers: AuthUser[] = [
   {
     id: "u_admin_001",
     email: "admin@itestified.app",
@@ -10,15 +10,24 @@ const users: AuthUser[] = [
   },
 ];
 
+const runtimeUsers: AuthUser[] = [];
+
 export function listMockUsers() {
-  return users;
+  return [...seedUsers, ...runtimeUsers];
 }
 
 export function findUserByEmail(email: string) {
-  return users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  const normalizedEmail = email.toLowerCase();
+  return runtimeUsers.find((u) => u.email.toLowerCase() === normalizedEmail) ?? seedUsers.find((u) => u.email.toLowerCase() === normalizedEmail);
 }
 
 export function upsertAdminUser(input: { email: string; password: string; fullName?: string }) {
+  const normalizedEmail = input.email.toLowerCase();
+  const seedUser = seedUsers.find((u) => u.email.toLowerCase() === normalizedEmail);
+  if (seedUser) {
+    return seedUser;
+  }
+
   const existing = findUserByEmail(input.email);
 
   if (existing) {
@@ -29,13 +38,13 @@ export function upsertAdminUser(input: { email: string; password: string; fullNa
   }
 
   const user: AuthUser = {
-    id: `u_admin_${users.length + 1}`,
+    id: `u_admin_${seedUsers.length + runtimeUsers.length + 1}`,
     email: input.email,
     password: input.password,
     fullName: input.fullName ?? "Admin User",
     role: "admin",
   };
 
-  users.push(user);
+  runtimeUsers.push(user);
   return user;
 }

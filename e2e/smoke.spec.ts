@@ -93,7 +93,7 @@ test("scripture of the day supports overview, action menu, details, and edit sta
 
   await page.goto("/scripture-of-the-day");
   await expect(page.getByRole("heading", { name: "Scripture of the day" })).toBeVisible();
-  await expect(page.getByText("Upload New Scripture")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Upload New Scripture/ })).toBeVisible();
 
   await page.goto("/scripture-of-the-day?menu=1");
   await expect(page.getByRole("link", { name: "View", exact: true })).toBeVisible();
@@ -101,8 +101,8 @@ test("scripture of the day supports overview, action menu, details, and edit sta
 
   await page.goto("/scripture-of-the-day?view=2");
   await expect(page.getByRole("heading", { name: "Scripture Details" })).toBeVisible();
-  await expect(page.locator("dl").getByText("Scheduled Date")).toBeVisible();
-  await expect(page.locator("dl").getByText("Scheduled", { exact: true })).toBeVisible();
+  await expect(page.locator("dl").first().getByText("Scheduled Date", { exact: true })).toBeVisible();
+  await expect(page.locator("dl").first().getByText("Scheduled", { exact: true })).toBeVisible();
 
   await page.goto("/scripture-of-the-day?edit=1");
   await expect(page.getByRole("heading", { name: "Edit Scripture" })).toBeVisible();
@@ -113,25 +113,194 @@ test("scripture of the day supports upload new and delete flows", async ({ page 
   await loginAsAdmin(page);
 
   await page.goto("/scripture-of-the-day?edit=new");
-  await expect(page.locator("h1").filter({ hasText: "Schedule Scriptures" })).toBeVisible();
-  await expect(page.getByText("Schedule Settings")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Schedule Scriptures", level: 1 }).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Schedule Settings" })).toBeVisible();
   await expect(page.getByRole("link", { name: "+ Add New" })).toBeVisible();
 
   await page.goto("/scripture-of-the-day?remove=1");
-  await expect(page.getByText("Delete Scripture?")).toBeVisible();
-  await expect(page.getByText("Yes, delete")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Delete Scripture?" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Yes, delete" })).toBeVisible();
 });
 
 test("scripture of the day supports filter modal", async ({ page }) => {
   await loginAsAdmin(page);
 
   await page.goto("/scripture-of-the-day?filter=1");
-  const filterModal = page.locator("form[action='/scripture-of-the-day']").filter({ has: page.getByText("Date Range") });
+  const filterModal = page.locator("form[action='/scripture-of-the-day']").filter({ has: page.getByText("Date Range") }).first();
   await expect(filterModal).toBeVisible();
   await expect(filterModal.getByText("Filter", { exact: true })).toBeVisible();
   await expect(filterModal.getByText("Date Range", { exact: true })).toBeVisible();
   await expect(filterModal.getByText("Status", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Apply" })).toBeVisible();
+});
+
+test("users route supports registered, details, and deactivate flows", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.goto("/users");
+  await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
+  await expect(page.getByText("User Management").first()).toBeVisible();
+  await expect(page.getByText("Emmanuel Oreoluwa").first()).toBeVisible();
+
+  await page.goto("/users?view=2");
+  await expect(page.getByText("User ID").first()).toBeVisible();
+  await expect(page.getByText("Registered").first()).toBeVisible();
+
+  await page.goto("/users?deactivate=1");
+  await expect(page.getByRole("heading", { name: "Deactivate Account" })).toBeVisible();
+  await expect(page.getByText("Confirm Deactivation").first()).toBeVisible();
+});
+
+test("users route supports deleted, deactivated, and empty states", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.goto("/users?tab=deleted");
+  await expect(page.getByRole("button", { name: "Delete" })).toBeVisible();
+  await expect(page.getByText("Felix Stone").first()).toBeVisible();
+
+  await page.goto("/users?tab=deactivated&view=1");
+  await expect(page.getByRole("heading", { name: "Account Timeline" })).toBeVisible();
+  await expect(page.getByText("Deactivation Reason").first()).toBeVisible();
+
+  await page.goto("/users?state=empty");
+  await expect(page.getByRole("main").getByText("No Data here Yet")).toBeVisible();
+});
+
+test("users route supports reactivation flow", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.goto("/users?tab=deactivated&reactivate=1");
+  await expect(page.getByRole("heading", { name: "Reactivate Account?" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Select/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Reactivate", exact: true })).toBeVisible();
+
+  await page.goto("/users?tab=registered&success=reactivate");
+  await expect(page.getByText("Account Reactivated Successfully!").first()).toBeVisible();
+});
+
+test("testimonies route supports list, detail, moderation, and filter flows", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.goto("/testimonies");
+  await expect(page.getByRole("heading", { name: "Testimonies" })).toBeVisible();
+  await expect(page.getByText("Testimony").first()).toBeVisible();
+  await expect(page.getByText("Emmanuel Oreoluwa").first()).toBeVisible();
+
+  await page.goto("/testimonies?view=1");
+  await expect(page.getByText("Miraculous Healing After Prayer").first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Approve Testimony" })).toBeVisible();
+
+  await page.goto("/testimonies?view=2");
+  await expect(page.getByText("Engagement Analytics").first()).toBeVisible();
+  await expect(page.getByText("Approved By").first()).toBeVisible();
+
+  await page.goto("/testimonies?reject=1");
+  await expect(page.getByRole("heading", { name: "Reject Testimony" })).toBeVisible();
+  await expect(page.getByPlaceholder("Type here...")).toBeVisible();
+
+  await page.goto("/testimonies?success=approve");
+  await expect(page.getByText("Testimony Approved Successfully!").first()).toBeVisible();
+
+  await page.goto("/testimonies?filter=1");
+  await expect(page.getByText("Status").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Apply" })).toBeVisible();
+});
+
+test("testimonies route supports video list, details, edit, and upload states", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.goto("/testimonies?tab=video");
+  await expect(page.getByText("Scheduled").first()).toBeVisible();
+  await expect(page.getByText("Drafts").first()).toBeVisible();
+
+  await page.goto("/testimonies?tab=video&screen=upload");
+  await expect(page.getByRole("heading", { name: "Upload Video Testimonies" })).toBeVisible();
+  await expect(page.getByText("Upload Status").first()).toBeVisible();
+
+  await page.goto("/testimonies?tab=video&settings=1");
+  await expect(page.getByRole("heading", { name: "Testimony Settings" })).toBeVisible();
+
+  await page.goto("/testimonies?tab=video&screen=activity");
+  await expect(page.getByRole("heading", { name: "Activity Log for Text Testimonies" })).toBeVisible();
+  await expect(page.getByText("Export as CSV File").first()).toBeVisible();
+
+  await page.goto("/testimonies?tab=video&view=1");
+  await expect(page.getByRole("heading", { name: "Video Details" })).toBeVisible();
+  await expect(page.getByText("Upload Date").first()).toBeVisible();
+
+  await page.goto("/testimonies?tab=video&edit=2");
+  await expect(page.getByRole("heading", { name: "Edit Video testimony" })).toBeVisible();
+  await expect(page.getByText("Scheduled date").first()).toBeVisible();
+
+  await page.goto("/testimonies?tab=video&success=upload");
+  await expect(page.getByText("Video Uploaded Successfully!").first()).toBeVisible();
+});
+
+test("inspirational pictures route supports list, preview, delete, and upload states", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.goto("/inspirational-pictures");
+  await expect(page.getByRole("main").getByRole("heading", { name: "Inspirational Pictures", level: 1 })).toBeVisible();
+  await expect(page.getByText("Thumbnail").first()).toBeVisible();
+  await expect(page.getByText("Status").first()).toBeVisible();
+
+  await page.goto("/inspirational-pictures?menu=3");
+  await expect(page.getByText("View").first()).toBeVisible();
+  await expect(page.getByText("Edit").first()).toBeVisible();
+  await expect(page.getByText("Delete").first()).toBeVisible();
+
+  await page.goto("/inspirational-pictures?view=1");
+  await expect(page.getByRole("heading", { name: "Picture Details" })).toBeVisible();
+  await expect(page.getByText("Uploaded By").first()).toBeVisible();
+
+  await page.goto("/inspirational-pictures?remove=1");
+  await expect(page.getByRole("heading", { name: "Delete This Picture?" })).toBeVisible();
+
+  await page.goto("/inspirational-pictures?screen=upload");
+  await expect(page.getByRole("heading", { name: "Upload Picture" })).toBeVisible();
+  await expect(page.getByText("Upload Status").first()).toBeVisible();
+
+  await page.goto("/inspirational-pictures?success=upload");
+  await expect(page.getByText("Uploaded Successfully!").first()).toBeVisible();
+});
+
+test("donations route supports list, filter, and action flows", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.goto("/donations");
+  await expect(page.getByRole("main").getByRole("heading", { name: "Donations history", level: 1 })).toBeVisible();
+  await expect(page.getByText("All Donations").first()).toBeVisible();
+  await expect(page.getByText("KY23FN5325").first()).toBeVisible();
+  await expect(page.getByPlaceholder("Search by Email, Transaction ID or Amount....")).toBeVisible();
+  await expect(page.getByText("Export").first()).toBeVisible();
+
+  await page.goto("/donations?filter=1");
+  const donationsFilter = page.locator("form[action='/donations']").first();
+  await expect(donationsFilter.getByRole("heading", { name: "Filter" })).toBeVisible();
+  await expect(donationsFilter.getByText("Amount", { exact: true })).toBeVisible();
+  await expect(donationsFilter.getByText("Currency", { exact: true })).toBeVisible();
+  await expect(donationsFilter.getByText("Status", { exact: true })).toBeVisible();
+  await expect(donationsFilter.getByText("Date Range", { exact: true })).toBeVisible();
+  await expect(donationsFilter.getByRole("button", { name: "Apply" })).toBeVisible();
+
+  await page.goto("/donations?menu=1");
+  await expect(page.getByText("Reverse donation").first()).toBeVisible();
+
+  await page.goto("/donations?refund=1");
+  await expect(page.getByText("Refund Successful").first()).toBeVisible();
+
+  await page.goto("/donations?reverse=2");
+  await expect(page.getByRole("heading", { name: "Reverse Donation" })).toBeVisible();
+
+  await page.goto("/donations?reason=2");
+  await expect(page.getByRole("heading", { name: "Reverse Donation" })).toBeVisible();
+  await expect(page.getByText("Reason for Reversal").first()).toBeVisible();
+
+  await page.goto("/donations?remove=1");
+  await expect(page.getByRole("heading", { name: "Delete Donation?" })).toBeVisible();
+
+  await page.goto("/donations?success=refund");
+  await expect(page.getByText("Refund Successful").first()).toBeVisible();
 });
 
 test("entry code flow reaches create-password page", async ({ page }) => {

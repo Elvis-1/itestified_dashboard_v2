@@ -165,7 +165,7 @@ export function getScriptureOfTheDayViewModel(input: {
   return {
     shell: getAdminShellViewModel({
       activeHref: "/scripture-of-the-day",
-      activeChildHref: activeTab === "scheduled" ? "/scripture-of-the-day?tab=scheduled" : "/scripture-of-the-day",
+      activeChildHref: input.edit === "new" ? "/scripture-of-the-day?edit=new" : "/scripture-of-the-day",
       fullName: input.fullName,
     }),
     activeTab,

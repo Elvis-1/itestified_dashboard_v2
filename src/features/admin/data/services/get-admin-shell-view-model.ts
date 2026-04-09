@@ -40,8 +40,48 @@ export function getAdminShellViewModel(input: {
             },
             {
               label: "Schedule Scriptures",
-              href: "/scripture-of-the-day?tab=scheduled",
-              active: input.activeChildHref === "/scripture-of-the-day?tab=scheduled",
+              href: "/scripture-of-the-day?edit=new",
+              active: input.activeChildHref === "/scripture-of-the-day?edit=new",
+            },
+          ],
+        };
+      }
+
+      if (item.href === "/testimonies") {
+        return {
+          ...item,
+          active: item.href === input.activeHref,
+          expanded: item.href === input.activeHref,
+          children: [
+            {
+              label: "All Testimonies",
+              href: "/testimonies",
+              active: (input.activeChildHref ?? "/testimonies") === "/testimonies",
+            },
+            {
+              label: "Upload Testimonies",
+              href: "/testimonies?tab=video&screen=upload",
+              active: input.activeChildHref === "/testimonies?tab=video&screen=upload",
+            },
+          ],
+        };
+      }
+
+      if (item.href === "/inspirational-pictures") {
+        return {
+          ...item,
+          active: item.href === input.activeHref,
+          expanded: item.href === input.activeHref,
+          children: [
+            {
+              label: "All Pictures",
+              href: "/inspirational-pictures",
+              active: (input.activeChildHref ?? "/inspirational-pictures") === "/inspirational-pictures",
+            },
+            {
+              label: "Upload Pictures",
+              href: "/inspirational-pictures?screen=upload",
+              active: input.activeChildHref === "/inspirational-pictures?screen=upload",
             },
           ],
         };
