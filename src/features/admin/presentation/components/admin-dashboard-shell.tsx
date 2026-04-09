@@ -1,17 +1,25 @@
+import Link from "next/link";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import type { AdminShellViewModel } from "@/features/admin/domain/entities/shell";
 import { AdminSidebarNav } from "@/features/admin/presentation/components/admin-sidebar-nav";
 
-function HeaderIcon({ kind, active = false, badge = false }: { kind: "theme" | "moon" | "bell" | "panel"; active?: boolean; badge?: boolean }) {
+function HeaderIcon({
+  kind,
+  active = false,
+  badge = false,
+  href,
+  label,
+}: {
+  kind: "theme" | "moon" | "bell" | "panel";
+  active?: boolean;
+  badge?: boolean;
+  href?: string;
+  label?: string;
+}) {
   const stroke = active ? "#FFFFFF" : "#BFBFBF";
-
-  return (
-    <span
-      className={`relative flex h-10 w-10 items-center justify-center rounded-full border ${
-        active ? "border-[#b98aeb] bg-[#9B68D5]" : "border-white/10 bg-[#252525]"
-      }`}
-    >
+  const content = (
+    <>
       {badge ? <span className="absolute right-[9px] top-[8px] h-[6px] w-[6px] rounded-full bg-[#ef4335]" /> : null}
       {kind === "theme" ? (
         <svg viewBox="0 0 20 20" className="h-[17px] w-[17px]" fill="none" aria-hidden="true">
@@ -25,9 +33,14 @@ function HeaderIcon({ kind, active = false, badge = false }: { kind: "theme" | "
         </svg>
       ) : null}
       {kind === "bell" ? (
-        <svg viewBox="0 0 20 20" className="h-[17px] w-[17px]" fill="none" aria-hidden="true">
-          <path d="M10 4.2a3.1 3.1 0 0 1 3.1 3.1v2.2c0 .8.3 1.5.8 2.1l.6.8H5.5l.6-.8c.5-.6.8-1.3.8-2.1V7.3A3.1 3.1 0 0 1 10 4.2z" stroke={stroke} strokeWidth="1.5" strokeLinejoin="round" />
-          <path d="M8.4 14.4a1.8 1.8 0 0 0 3.2 0" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
+        <svg viewBox="0 0 20 20" className="h-[18px] w-[18px]" fill="none" aria-hidden="true">
+          <path
+            d="M10 4.1c1.94 0 3.5 1.56 3.5 3.5v2.02c0 .78.27 1.54.75 2.16l.84 1.02H4.91l.84-1.02c.48-.62.75-1.38.75-2.16V7.6c0-1.94 1.56-3.5 3.5-3.5Z"
+            stroke={stroke}
+            strokeWidth="1.55"
+            strokeLinejoin="round"
+          />
+          <path d="M8.35 14.6a1.9 1.9 0 0 0 3.3 0" stroke={stroke} strokeWidth="1.55" strokeLinecap="round" />
         </svg>
       ) : null}
       {kind === "panel" ? (
@@ -36,8 +49,22 @@ function HeaderIcon({ kind, active = false, badge = false }: { kind: "theme" | "
           <path d="M8 10h4" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       ) : null}
-    </span>
+    </>
   );
+
+  const className = `relative flex h-10 w-10 items-center justify-center rounded-full border transition-colors ${
+        active ? "border-[#b98aeb] bg-[#9B68D5]" : "border-white/10 bg-[#252525]"
+      }`;
+
+  if (href) {
+    return (
+      <Link href={href} aria-label={label} className={className}>
+        {content}
+      </Link>
+    );
+  }
+
+  return <span className={className}>{content}</span>;
 }
 
 export function AdminDashboardShell({
@@ -69,7 +96,7 @@ export function AdminDashboardShell({
               <div className="flex items-center gap-[7px]">
                 <HeaderIcon kind="theme" />
                 <HeaderIcon kind="moon" active />
-                <HeaderIcon kind="bell" badge />
+                <HeaderIcon kind="bell" badge href="/notifications-history?panel=1" label="Open notifications" />
                 <HeaderIcon kind="panel" />
               </div>
               <div className="flex items-center gap-3">

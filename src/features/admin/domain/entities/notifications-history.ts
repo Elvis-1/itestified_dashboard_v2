@@ -29,6 +29,7 @@ export type NotificationsHistoryViewModel = {
   showingLabel: string;
   errorMessage?: string;
   filterDraft: NotificationsHistoryFilterDraft;
+  showPanel: boolean;
   showFilterModal: boolean;
   showDeleteModal: boolean;
   deleteMode?: "single" | "bulk";

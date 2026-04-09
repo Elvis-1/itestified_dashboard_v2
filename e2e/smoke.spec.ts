@@ -22,6 +22,18 @@ test("existing admin can log in and reach overview", async ({ page }) => {
   await expect(page.getByText("Elvis Igiebor")).toBeVisible();
 });
 
+test("bell icon opens notifications panel and can route to notifications history", async ({ page }) => {
+  await loginAsAdmin(page);
+  await page.getByRole("link", { name: "Open notifications" }).click();
+
+  await expect(page).toHaveURL("/notifications-history?panel=1");
+  await expect(page.getByRole("link", { name: "View all notifications" })).toBeVisible();
+
+  await page.getByRole("link", { name: "View all notifications" }).click();
+  await expect(page).toHaveURL("/notifications-history");
+  await expect(page.getByRole("heading", { name: "Notifications" }).first()).toBeVisible();
+});
+
 test("overview supports the empty dataset state", async ({ page }) => {
   await loginAsAdmin(page);
   await page.goto("/overview?state=empty");
@@ -301,6 +313,84 @@ test("donations route supports list, filter, and action flows", async ({ page })
 
   await page.goto("/donations?success=refund");
   await expect(page.getByText("Refund Successful").first()).toBeVisible();
+});
+
+test("notifications history route supports list, filter, selection, and notification detail flow", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.goto("/notifications-history");
+  await expect(page.getByRole("heading", { name: "Notifications" })).toBeVisible();
+  await expect(page.getByText("New Gift Received").first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "New Text Testimony Submitted" })).toBeVisible();
+
+  await page.goto("/notifications-history?filter=1");
+  await expect(page.getByRole("heading", { name: "Filter" })).toBeVisible();
+  await expect(page.getByText("Date Range").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Apply" })).toBeVisible();
+
+  await page.goto("/notifications-history?panel=1");
+  await expect(page.getByRole("link", { name: "View all notifications" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Mark All as Read" }).first()).toBeVisible();
+
+  await page.goto("/notifications-history?selected=1,2&deleteAll=1");
+  await expect(page.getByRole("heading", { name: "Delete Notification" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Delete", exact: true }).last()).toBeVisible();
+
+  await page.goto("/notifications-history?success=delete");
+  await expect(page.getByText("Notifications deleted successfully!").first()).toBeVisible();
+
+  await page.goto("/testimonies?view=1&origin=notification");
+  await expect(page.getByText("Opened from notifications history.").first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to notifications" })).toHaveAttribute("href", "/notifications-history");
+});
+
+test("reviews route supports list, filter, menu, detail, and delete flows", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.goto("/reviews");
+  await expect(page.getByRole("heading", { name: "Reviews" })).toBeVisible();
+  await expect(page.getByText("RE-001", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("John Stone", { exact: true }).first()).toBeVisible();
+
+  await page.goto("/reviews?menu=1");
+  await expect(page.getByRole("link", { name: "View details", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Delete", exact: true }).first()).toBeVisible();
+
+  await page.goto("/reviews?filter=1");
+  const reviewsFilter = page.locator("form[action='/reviews']").first();
+  await expect(reviewsFilter.getByRole("heading", { name: "Filter" })).toBeVisible();
+  await expect(reviewsFilter.getByText("Rating", { exact: true })).toBeVisible();
+  await expect(reviewsFilter.getByText("Date Range", { exact: true })).toBeVisible();
+
+  await page.goto("/reviews?view=1");
+  await expect(page.getByRole("heading", { name: "Review", exact: true })).toBeVisible();
+  await expect(page.locator("dt").filter({ hasText: "Email Address" })).toBeVisible();
+
+  await page.goto("/reviews?remove=1");
+  await expect(page.getByRole("heading", { name: "Delete review?" })).toBeVisible();
+
+  await page.goto("/reviews?selected=1,2,3&deleteAll=1");
+  await expect(page.getByRole("heading", { name: "Delete all reviews?" })).toBeVisible();
+});
+
+test("analytics route supports testimonies, users, and donations states", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.goto("/analytics");
+  await expect(page.getByRole("heading", { name: "Testimony Analytics" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Performance Trends" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Engagement by Category" })).toBeVisible();
+
+  await page.goto("/analytics?mode=video");
+  await expect(page.getByRole("heading", { name: "Video Distribution by Category" })).toBeVisible();
+
+  await page.goto("/analytics?area=users");
+  await expect(page.getByRole("heading", { name: "User Analytics" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "User Growth Overview" })).toBeVisible();
+
+  await page.goto("/analytics?area=donations");
+  await expect(page.getByRole("heading", { name: "Donation Analytics" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Donation Channels" })).toBeVisible();
 });
 
 test("entry code flow reaches create-password page", async ({ page }) => {

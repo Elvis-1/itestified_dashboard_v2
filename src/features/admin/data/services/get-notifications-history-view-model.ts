@@ -70,6 +70,13 @@ function parseSelected(selected?: string) {
     .filter((value) => Number.isFinite(value));
 }
 
+function parseReadIds(read?: string, selectedIds: number[]) {
+  if (!read) return [] as number[];
+  if (read === "all") return notifications.map((row) => row.id);
+  if (read === "selected") return selectedIds;
+  return parseSelected(read);
+}
+
 function applyFilter(rows: NotificationHistoryRow[], filterDraft: NotificationsHistoryFilterDraft, query: string) {
   return rows.filter((row) => {
     if (filterDraft.status && row.status !== filterDraft.status) return false;
@@ -81,11 +88,13 @@ function applyFilter(rows: NotificationHistoryRow[], filterDraft: NotificationsH
 export function getNotificationsHistoryViewModel(input: {
   state?: string;
   q?: string;
+  panel?: string;
   filter?: string;
   statusFilter?: string;
   from?: string;
   to?: string;
   selected?: string;
+  read?: string;
   delete?: string;
   deleteAll?: string;
   success?: string;
@@ -93,16 +102,18 @@ export function getNotificationsHistoryViewModel(input: {
 }): NotificationsHistoryViewModel {
   const phaseState = normalizeState(input.state);
   const searchQuery = input.q?.trim() ?? "";
+  const selectedIds = parseSelected(input.selected);
+  const readIds = new Set(parseReadIds(input.read, selectedIds));
   const filterDraft: NotificationsHistoryFilterDraft = {
     status: normalizeStatus(input.statusFilter),
     from: input.from?.trim() || undefined,
     to: input.to?.trim() || undefined,
   };
-  const filteredRows = applyFilter(notifications, filterDraft, searchQuery);
+  const normalizedRows = notifications.map((row) => (readIds.has(row.id) ? { ...row, status: "read" as const } : row));
+  const filteredRows = applyFilter(normalizedRows, filterDraft, searchQuery);
   const rows = phaseState === "populated" ? filteredRows : [];
-  const selectedIds = parseSelected(input.selected);
   const deleteId = Number(input.delete ?? "");
-  const selectedRow = Number.isFinite(deleteId) ? notifications.find((row) => row.id === deleteId) ?? null : null;
+  const selectedRow = Number.isFinite(deleteId) ? normalizedRows.find((row) => row.id === deleteId) ?? null : null;
   const successMessage = input.success === "delete" ? "Notifications deleted successfully!" : input.success === "read" ? "Notifications marked as read." : undefined;
 
   return {
@@ -118,6 +129,7 @@ export function getNotificationsHistoryViewModel(input: {
     showingLabel: rows.length === 0 ? "Showing 0 of 0" : `Showing 1-${rows.length} of ${rows.length}`,
     errorMessage: phaseState === "error" ? "We could not load notifications right now. Please try again." : undefined,
     filterDraft,
+    showPanel: input.panel === "1",
     showFilterModal: input.filter === "1",
     showDeleteModal: Boolean(input.deleteAll === "1" || selectedRow),
     deleteMode: input.deleteAll === "1" ? "bulk" : selectedRow ? "single" : undefined,

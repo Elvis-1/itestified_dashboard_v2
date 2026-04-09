@@ -87,6 +87,31 @@ export function getAdminShellViewModel(input: {
         };
       }
 
+      if (item.href === "/analytics") {
+        return {
+          ...item,
+          active: item.href === input.activeHref,
+          expanded: item.href === input.activeHref,
+          children: [
+            {
+              label: "Users",
+              href: "/analytics?area=users",
+              active: input.activeChildHref === "/analytics?area=users",
+            },
+            {
+              label: "Testimonies",
+              href: "/analytics",
+              active: (input.activeChildHref ?? "/analytics") === "/analytics",
+            },
+            {
+              label: "Donations",
+              href: "/analytics?area=donations",
+              active: input.activeChildHref === "/analytics?area=donations",
+            },
+          ],
+        };
+      }
+
       return {
         ...item,
         active: item.href === input.activeHref,
