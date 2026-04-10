@@ -39,7 +39,7 @@ test("overview supports the empty dataset state", async ({ page }) => {
   await page.goto("/overview?state=empty");
 
   await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
-  await expect(page.getByText("No Data here Yet")).toBeVisible();
+  await expect(page.getByText("No Data here Yet").first()).toBeVisible();
   await expect(page.getByText("Pending Donations")).toBeVisible();
 });
 
@@ -65,8 +65,8 @@ test("home page management supports the remove confirmation state", async ({ pag
   await loginAsAdmin(page);
   await page.goto("/home-management?tab=video&remove=1");
 
-  await expect(page.getByText("Remove from Home Page?")).toBeVisible();
-  await expect(page.getByText("Yes, remove")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Remove from Home Page?" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Yes, remove" })).toBeVisible();
 });
 
 test("home page management supports the row action menu state", async ({ page }) => {
@@ -81,8 +81,8 @@ test("home page management supports inspirational picture details", async ({ pag
   await loginAsAdmin(page);
   await page.goto("/home-management?tab=pictures&view=1");
 
-  await expect(page.getByText("Picture Details")).toBeVisible();
-  await expect(page.getByText("Number of downloads")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Picture Details" })).toBeVisible();
+  await expect(page.getByText("Number of downloads").first()).toBeVisible();
   await expect(page.getByRole("definition").filter({ hasText: "Instagram.com" })).toBeVisible();
 });
 
@@ -208,7 +208,7 @@ test("testimonies route supports list, detail, moderation, and filter flows", as
 
   await page.goto("/testimonies?reject=1");
   await expect(page.getByRole("heading", { name: "Reject Testimony" })).toBeVisible();
-  await expect(page.getByPlaceholder("Type here...")).toBeVisible();
+  await expect(page.getByPlaceholder("Type here...").first()).toBeVisible();
 
   await page.goto("/testimonies?success=approve");
   await expect(page.getByText("Testimony Approved Successfully!").first()).toBeVisible();
@@ -364,7 +364,7 @@ test("reviews route supports list, filter, menu, detail, and delete flows", asyn
 
   await page.goto("/reviews?view=1");
   await expect(page.getByRole("heading", { name: "Review", exact: true })).toBeVisible();
-  await expect(page.locator("dt").filter({ hasText: "Email Address" })).toBeVisible();
+  await expect(page.locator("dt").filter({ hasText: "Email Address" }).first()).toBeVisible();
 
   await page.goto("/reviews?remove=1");
   await expect(page.getByRole("heading", { name: "Delete review?" })).toBeVisible();
@@ -391,6 +391,81 @@ test("analytics route supports testimonies, users, and donations states", async 
   await page.goto("/analytics?area=donations");
   await expect(page.getByRole("heading", { name: "Donation Analytics" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Donation Channels" })).toBeVisible();
+});
+
+test("my profile and notification settings routes support key settings flows", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.goto("/my-profile");
+  await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Personal Information" })).toBeVisible();
+
+  await page.goto("/my-profile?screen=contact");
+  await expect(page.getByRole("textbox", { name: "New Email Address" })).toBeVisible();
+
+  await page.goto("/my-profile?screen=otp");
+  await expect(page.getByText("OTP").first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Verify" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Resend OTP" })).toBeVisible();
+
+  await page.goto("/my-profile?password=1");
+  await expect(page.getByRole("heading", { name: "Change Password" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Current Password" })).toBeVisible();
+
+  await page.goto("/notification-settings");
+  await expect(page.getByRole("heading", { name: "Notification settings" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Allow Email Notifications" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "New Donation Received" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Save Changes" })).toBeVisible();
+
+  await page.goto("/notification-settings?success=1");
+  await expect(page.getByText("Notification settings saved successfully.").first()).toBeVisible();
+});
+
+test("admin management route supports list and role-management flows", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.goto("/admin");
+  await expect(page.getByText("All Admin Users").first()).toBeVisible();
+  await expect(page.getByText("Elvis Igiebor").first()).toBeVisible();
+  await expect(page.getByText("Content Admin").first()).toBeVisible();
+  await expect(page.getByText("Invite New User").first()).toBeVisible();
+
+  await page.goto("/admin?menu=1");
+  await expect(page.getByText("Change Member Roles").first()).toBeVisible();
+  await expect(page.getByText("Rename Role").first()).toBeVisible();
+
+  await page.goto("/admin?createRole=1");
+  await expect(page.getByRole("heading", { name: "Create Role" })).toBeVisible();
+  await expect(page.getByText("Select Role").first()).toBeVisible();
+
+  await page.goto("/admin?invite=1");
+  await expect(page.getByRole("heading", { name: "Invite New User" })).toBeVisible();
+  await expect(page.getByText("Invite a new Super Admin").first()).toBeVisible();
+
+  await page.goto("/admin?manageRole=2");
+  await expect(page.getByText("Change Member Roles").first()).toBeVisible();
+  await expect(page.getByText("Content Admin").first()).toBeVisible();
+
+  await page.goto("/admin?permission=1");
+  await expect(page.getByText("Permission Page").first()).toBeVisible();
+
+  await page.goto("/admin?managePermissions=1");
+  await expect(page.getByText("Manage Permissions").first()).toBeVisible();
+  await expect(page.getByText("Overview").first()).toBeVisible();
+
+  await page.goto("/admin?assignRole=3");
+  await expect(page.getByRole("heading", { name: "Select Role" })).toBeVisible();
+  await expect(page.getByText("Admin Users").first()).toBeVisible();
+
+  await page.goto("/admin?remove=1");
+  await expect(page.getByRole("heading", { name: "Delete Admin User?" })).toBeVisible();
+
+  await page.goto("/admin?success=1");
+  await expect(page.getByText("Role Created Successfully!").first()).toBeVisible();
+
+  await page.goto("/admin?success=1&successType=admin-assigned");
+  await expect(page.getByText("Admin User Assigned Successfully!").first()).toBeVisible();
 });
 
 test("entry code flow reaches create-password page", async ({ page }) => {
